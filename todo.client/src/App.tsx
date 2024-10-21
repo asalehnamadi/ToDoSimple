@@ -1,4 +1,4 @@
-import { Button, Stack, Switch, useColorMode } from "@chakra-ui/react";
+import {  Stack, Switch, useColorMode } from "@chakra-ui/react";
 import "./App.css";
 import TodoList from "./components/todoList";
 

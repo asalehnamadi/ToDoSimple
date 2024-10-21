@@ -22,7 +22,7 @@ namespace ToDo.Server.Services
                 Id = p.Id,
                 DeadLine = p.DeadLine,
                 Description = p.Description,
-                IsCompleted = p.IsCompleted
+                CompleteDate = p.CompleteDate
             }).ToList();
         }
 
@@ -31,7 +31,7 @@ namespace ToDo.Server.Services
             var task = await _repository.GetByIdAsync(id);
             return new TodoTaskDto
             {
-                IsCompleted = task.IsCompleted,
+                CompleteDate = task.CompleteDate,
                 DeadLine = task.DeadLine,
                 Description = task.Description,
                 Id = task.Id
@@ -44,7 +44,7 @@ namespace ToDo.Server.Services
             {
                 DeadLine = task.DeadLine,
                 Description = task.Description,
-                IsCompleted = task.IsCompleted
+                CompleteDate = task.CompleteDate
             };
             todoTask= await _repository.AddAsync(todoTask);
             return new TodoTaskDto
@@ -52,7 +52,7 @@ namespace ToDo.Server.Services
                 DeadLine = todoTask.DeadLine,
                 Description = todoTask.Description,
                 Id = todoTask.Id,
-                IsCompleted = todoTask.IsCompleted
+                CompleteDate = todoTask.CompleteDate
             };
         }
 
@@ -63,11 +63,22 @@ namespace ToDo.Server.Services
            
             todoTask.Description=task.Description;
             todoTask.DeadLine=task.DeadLine;
-            todoTask.IsCompleted=task.IsCompleted;
+            todoTask.CompleteDate = task.CompleteDate;
 
             await _repository.UpdateAsync(todoTask);
         }
 
+        public async Task<TodoTaskDto> ChangeTaskCompleteAsync(Guid id)
+        {
+            var todoTask = await _repository.GetByIdAsync(id);
+            if (todoTask == null) throw new KeyNotFoundException("Task not found.");
+            if (todoTask.CompleteDate.HasValue)
+                todoTask.CompleteDate = null;
+            else
+                todoTask.CompleteDate = DateTime.UtcNow;
+            await _repository.UpdateAsync(todoTask);
+            return await GetByIdAsync(id);
+        }
         public async Task DeleteTaskAsync(Guid id) => await _repository.DeleteAsync(id);
     }
 }

@@ -1,5 +1,5 @@
 import { Checkbox } from "@chakra-ui/react";
-import { Todo } from "../hooks/useTodos";
+import { isTaskComplete, Todo } from "../hooks/useTodos";
 
 interface Props {
   todo: Todo;
@@ -10,7 +10,7 @@ const TodoComplete = ({ todo, changeComplete }: Props) => {
   return (
     <Checkbox
       onChange={changeComplete}
-      isChecked={todo.isCompleted}></Checkbox>
+      isChecked={isTaskComplete(todo)}></Checkbox>
   );
 };
 export default TodoComplete;

@@ -7,9 +7,11 @@ export interface Todo {
   id: string;
   description: string;
   deadLine?: Date;
-  isCompleted: boolean;
+  completeDate?: Date;
 }
-
+export const isTaskComplete = (todo: Todo) => {
+  return todo.completeDate !== null;
+};
 export const todoSchema = Joi.object({
   description: Joi.string().min(5).required(),
   deadLine: Joi.string().isoDate().allow(""),

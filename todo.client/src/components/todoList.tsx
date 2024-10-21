@@ -7,11 +7,10 @@ import {
   Td,
   TableContainer,
   Text,
-  Checkbox,
   Heading,
   useToast,
 } from "@chakra-ui/react";
-import useTodos, { Todo } from "../hooks/useTodos";
+import useTodos, { isTaskComplete, Todo } from "../hooks/useTodos";
 import { useState } from "react";
 import NewTodo from "./newTodo";
 import apiClient from "../services/api-client";
@@ -22,7 +21,7 @@ import TodoComplete from "./todoUpdate";
 
 const TodoList = () => {
   const toast = useToast();
-  const [update, setUpdate] = useState();
+  const [, setUpdate] = useState();
 
   const { todos, error, isLoading, updateTodos } = useTodos({});
 
@@ -34,12 +33,11 @@ const TodoList = () => {
   };
 
   const handleComplete = (todo: Todo) => {
-    const updatedTodo = { ...todo, isCompleted: !todo.isCompleted };
     apiClient
-      .put(`/Todo/${todo.id}`, todo)
+      .put(`/Todo/${todo.id}/complete`, todo)
       .then((res) => {
         const updatedTodos = todos.map((t) =>
-          t.id === todo.id ? updatedTodo : t
+          t.id === todo.id ? res.data : t
         );
         updateTodos(updatedTodos);
         setUpdate(todo.id);
@@ -75,64 +73,85 @@ const TodoList = () => {
   };
 
   const getColor = (todo: Todo) => {
-    if (todo.isCompleted) return "green.500";
-    if (todo.deadLine === null) return "";
-    const dueDate = new Date(todo.deadLine);
     const today = new Date();
-    if (dueDate < today) return "red.500";
+    let deadLine;
+
+    if (todo.deadLine) {
+      deadLine = new Date(todo.deadLine);
+      deadLine.setDate(deadLine.getDate() + 1);
+    }
+
+    if (isTaskComplete(todo)) {
+      return deadLine && deadLine < today ? "red" : "green";
+    } else {
+      return deadLine && deadLine < today ? "red" : "initial";
+    }
   };
 
-  const handleFilter = () => {
-    console.log("filtered");
-  };
   return (
     <>
       {error && <Text color="red.500">{error}</Text>}
       {isLoading && <TodoSkeleton />}
-      {todos.length > 0 && (
+      {!isLoading && (
         <>
           <NewTodo onSubmit={handleSubmit} />
-          <Heading as="h1">Todos</Heading>
-          <TableContainer>
-            <Table size="sm">
-              <Thead>
-                <Tr>
-                  <Th></Th>
-                  <Th>Task</Th>
-                  <Th>Dead Line</Th>
-                  <Th></Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {todos.map((todo) => (
-                  <Tr
-                    key={todo.id}
-                    sx={{ _hover: { bg: "gray.900" } }}
-                    color={getColor(todo)}>
-                    <Td>
-                      <TodoComplete
-                        todo={todo}
-                        changeComplete={() => handleComplete(todo)}
-                      />
-                    </Td>
-                    <Td>{todo.description}</Td>
-                    <Td>
-                      {todo.deadLine
-                        ? new Date(todo.deadLine).toLocaleDateString()
-                        : ""}
-                    </Td>
-                    <Td>
-                      <TodoDelete handleDelete={() => handleDelete(todo.id)} />
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
-          <TodoFilter
-            todos={todos}
-            updateTodos={updateTodos}
-          />
+
+          {todos.length > 0 && (
+            <>
+              <Heading as="h1">Todos</Heading>
+              <TableContainer>
+                <Table size="sm">
+                  <Thead>
+                    <Tr>
+                      <Th>Completed</Th>
+                      <Th>Task</Th>
+                      <Th>Dead Line</Th>
+                      <Th>Complete Date</Th>
+                      <Th></Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {todos.map((todo) => (
+                      <Tr
+                        key={todo.id}
+                        color={getColor(todo)}>
+                        <Td>
+                          <TodoComplete
+                            todo={todo}
+                            changeComplete={() => handleComplete(todo)}
+                          />
+                        </Td>
+                        <Td>
+                          <Text as={isTaskComplete(todo) ? "s" : ""}>
+                            {todo.description}
+                          </Text>
+                        </Td>
+                        <Td>
+                          {todo.deadLine
+                            ? new Date(todo.deadLine).toLocaleDateString()
+                            : "-"}
+                        </Td>
+                        <Td>
+                          {todo.completeDate
+                            ? new Date(todo.completeDate).toLocaleDateString()
+                            : "-"}
+                        </Td>
+                        <Td>
+                          <TodoDelete
+                            handleDelete={() => handleDelete(todo.id)}
+                          />
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+              <TodoFilter
+                todos={todos}
+                updateTodos={updateTodos}
+              />
+            </>
+          )}
         </>
       )}
     </>

@@ -1,5 +1,5 @@
 import { Radio, RadioGroup } from "@chakra-ui/react";
-import { Todo } from "../hooks/useTodos";
+import { isTaskComplete, Todo } from "../hooks/useTodos";
 import { useState } from "react";
 
 interface Request {
@@ -14,10 +14,10 @@ const TodoFilter = ({ todos, updateTodos }: Request) => {
     let updatedTodos = [];
     switch (value) {
       case "active":
-        updatedTodos = todos.filter((todo) => !todo.isCompleted);
+        updatedTodos = todos.filter((todo) => !isTaskComplete(todo));
         break;
       case "complete":
-        updatedTodos = todos.filter((todo) => todo.isCompleted);
+        updatedTodos = todos.filter((todo) => isTaskComplete(todo));
       default:
         updatedTodos = todos;
         break;

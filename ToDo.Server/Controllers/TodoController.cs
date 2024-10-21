@@ -19,27 +19,35 @@ namespace ToDo.Server.Controllers
 
         // GET: api/<Todo>
         [HttpGet]
-        public async Task< IList<TodoTaskDto>> GetAllTasks()
+        public async Task<IList<TodoTaskDto>> GetAllTasks()
         {
             return await _service.GetAllTasksAsync();
         }
 
-      
+
 
         // POST api/<Todo>
         [HttpPost]
         public async Task<ActionResult<TodoTaskDto>> Post([FromBody] AddUpdateTodoTaskDto model)
         {
-             var task= await _service.AddTaskAsync(model);
-             return CreatedAtAction(nameof(GetAllTasks), new { id = task.Id }, task);
+            var task = await _service.AddTaskAsync(model);
+            return CreatedAtAction(nameof(GetAllTasks), new { id = task.Id }, task);
         }
 
         // PUT api/<Todo>/5
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(Guid id, [FromBody] AddUpdateTodoTaskDto model)
         {
-            await _service.UpdateTaskAsync(id,model);
+            await _service.UpdateTaskAsync(id, model);
             return Ok(model);
+        }
+
+        // PUT api/<Todo>/5/complete
+        [HttpPut("{id}/complete")]
+        public async Task<ActionResult> Put(Guid id)
+        {
+            var task = await _service.ChangeTaskCompleteAsync(id);
+            return Ok(task);
         }
 
         // DELETE api/<Todo>/5
