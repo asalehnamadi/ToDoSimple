@@ -17,16 +17,13 @@ namespace ToDo.Server.Controllers
             _service = service;
         }
 
-        // GET: api/<Todo>
+
         [HttpGet]
         public async Task<IList<TodoTaskDto>> GetAllTasks()
         {
             return await _service.GetAllTasksAsync();
         }
 
-
-
-        // POST api/<Todo>
         [HttpPost]
         public async Task<ActionResult<TodoTaskDto>> Post([FromBody] AddUpdateTodoTaskDto model)
         {
@@ -34,7 +31,6 @@ namespace ToDo.Server.Controllers
             return CreatedAtAction(nameof(GetAllTasks), new { id = task.Id }, task);
         }
 
-        // PUT api/<Todo>/5
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(Guid id, [FromBody] AddUpdateTodoTaskDto model)
         {
@@ -42,7 +38,6 @@ namespace ToDo.Server.Controllers
             return Ok(model);
         }
 
-        // PUT api/<Todo>/5/complete
         [HttpPut("{id}/complete")]
         public async Task<ActionResult> Put(Guid id)
         {
@@ -50,7 +45,7 @@ namespace ToDo.Server.Controllers
             return Ok(task);
         }
 
-        // DELETE api/<Todo>/5
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
