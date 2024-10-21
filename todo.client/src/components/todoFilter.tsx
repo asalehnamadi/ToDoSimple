@@ -1,42 +1,42 @@
-import { Radio, RadioGroup } from "@chakra-ui/react";
-import { isTaskComplete, Todo } from "../hooks/useTodos";
-import { useState } from "react";
+import { Box, Text } from "@chakra-ui/react";
+import { Todo } from "../hooks/useTodos";
 
 interface Request {
   todos: Todo[];
-  updateTodos: (updatedTodos: Todo[]) => void;
+  currentFilter: string;
+  filterTasks: (filter: string) => void;
 }
 
-const TodoFilter = ({ todos, updateTodos }: Request) => {
-  const [filter, setFilter] = useState("all");
-
+const TodoFilter = ({ todos, currentFilter, filterTasks }: Request) => {
   const handleFilter = (value: "all" | "active" | "complete") => {
-    let updatedTodos = [];
-    switch (value) {
-      case "active":
-        updatedTodos = todos.filter((todo) => !isTaskComplete(todo));
-        break;
-      case "complete":
-        updatedTodos = todos.filter((todo) => isTaskComplete(todo));
-      default:
-        updatedTodos = todos;
-        break;
-    }
-
-    updateTodos(updatedTodos);
-    setFilter(value);
+    filterTasks(value);
   };
+
   return (
     <>
-      {todos.length} items left
-      <RadioGroup
-        onChange={handleFilter}
-        value={filter}>
-        <Radio value="all">All</Radio>
-        <Radio value="active">Active</Radio>
-        <Radio value="complete">Complete</Radio>
-      </RadioGroup>
+      <Box
+        display="flex"
+        alignItems="center">
+        <Text>{todos.length} items left</Text>
+        {["all", "active", "complete"].map((filter) => (
+          <Box
+            key={filter}
+            onClick={() =>
+              handleFilter(filter as "all" | "active" | "complete")
+            }
+            padding={1}
+            marginLeft={2}
+            borderWidth={currentFilter === filter ? "2px" : "1px"}
+            borderColor={currentFilter === filter ? "blue.500" : "gray.300"}
+            borderRadius="md"
+            cursor="pointer"
+            _hover={{ borderColor: "blue.300" }}>
+            {filter.charAt(0).toUpperCase() + filter.slice(1)}
+          </Box>
+        ))}
+      </Box>
     </>
   );
 };
+
 export default TodoFilter;

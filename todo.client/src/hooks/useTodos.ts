@@ -25,9 +25,13 @@ const useTodos = ({ dependency }: Request) => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
-
+  const [filter, setFilter] = useState("all");
   const updateTodos = (updatedTodos: Todo[]) => {
     setTodos(updatedTodos);
+  };
+
+  const filterTasks = (filter: string) => {
+    setFilter(filter);
   };
 
   useEffect(
@@ -37,7 +41,16 @@ const useTodos = ({ dependency }: Request) => {
       apiClient
         .get<Todo[]>("/Todo")
         .then((res) => {
-          setTodos(res.data);
+          let updatedTodos = res.data;
+          switch (filter) {
+            case "active":
+              updatedTodos = res.data.filter((todo) => !todo.completeDate);
+              break;
+            case "complete":
+              updatedTodos = res.data.filter((todo) => todo.completeDate);
+              break;
+          }
+          setTodos(updatedTodos);
           setLoading(false);
         })
         .catch((err) => {
@@ -47,8 +60,8 @@ const useTodos = ({ dependency }: Request) => {
         });
       return () => controller.abort();
     },
-    dependency ? dependency : []
+    dependency ? [...dependency, filter] : [filter]
   );
-  return { todos, error, isLoading, updateTodos };
+  return { todos, error, isLoading, updateTodos, filterTasks, filter };
 };
 export default useTodos;

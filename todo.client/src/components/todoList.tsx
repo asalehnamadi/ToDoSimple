@@ -21,11 +21,11 @@ import TodoComplete from "./todoUpdate";
 
 const TodoList = () => {
   const toast = useToast();
-  const [, setUpdate] = useState();
+  const [, setUpdate] = useState("");
+  const { todos, error, isLoading, updateTodos, filterTasks, filter } =
+    useTodos({});
 
-  const { todos, error, isLoading, updateTodos } = useTodos({});
-
-  const handleSubmit = (result) => {
+  const handleSubmit = (result: Todo) => {
     const updatedTodos = [...todos, result];
     updatedTodos.sort((a, b) => a.description.localeCompare(b.description));
     updateTodos(updatedTodos);
@@ -53,10 +53,10 @@ const TodoList = () => {
       });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     apiClient
       .delete(`/Todo/${id}`)
-      .then((res) => {
+      .then(() => {
         const updatedTodos = todos.filter((todo) => todo.id !== id);
         updateTodos(updatedTodos);
         setUpdate(id);
@@ -96,62 +96,57 @@ const TodoList = () => {
         <>
           <NewTodo onSubmit={handleSubmit} />
 
-          {todos.length > 0 && (
-            <>
-              <Heading as="h1">Todos</Heading>
-              <TableContainer>
-                <Table size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>Completed</Th>
-                      <Th>Task</Th>
-                      <Th>Dead Line</Th>
-                      <Th>Complete Date</Th>
-                      <Th></Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {todos.map((todo) => (
-                      <Tr
-                        key={todo.id}
-                        color={getColor(todo)}>
-                        <Td>
-                          <TodoComplete
-                            todo={todo}
-                            changeComplete={() => handleComplete(todo)}
-                          />
-                        </Td>
-                        <Td>
-                          <Text as={isTaskComplete(todo) ? "s" : ""}>
-                            {todo.description}
-                          </Text>
-                        </Td>
-                        <Td>
-                          {todo.deadLine
-                            ? new Date(todo.deadLine).toLocaleDateString()
-                            : "-"}
-                        </Td>
-                        <Td>
-                          {todo.completeDate
-                            ? new Date(todo.completeDate).toLocaleDateString()
-                            : "-"}
-                        </Td>
-                        <Td>
-                          <TodoDelete
-                            handleDelete={() => handleDelete(todo.id)}
-                          />
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-              <TodoFilter
-                todos={todos}
-                updateTodos={updateTodos}
-              />
-            </>
-          )}
+          <Heading as="h1">Todos</Heading>
+          <TableContainer>
+            <Table size="sm">
+              <Thead>
+                <Tr>
+                  <Th>Completed</Th>
+                  <Th>Task</Th>
+                  <Th>Dead Line</Th>
+                  <Th>Complete Date</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {todos.map((todo) => (
+                  <Tr
+                    key={todo.id}
+                    color={getColor(todo)}>
+                    <Td>
+                      <TodoComplete
+                        todo={todo}
+                        changeComplete={() => handleComplete(todo)}
+                      />
+                    </Td>
+                    <Td>
+                      <Text as={isTaskComplete(todo) ? "s" : ""}>
+                        {todo.description}
+                      </Text>
+                    </Td>
+                    <Td>
+                      {todo.deadLine
+                        ? new Date(todo.deadLine).toLocaleDateString()
+                        : "-"}
+                    </Td>
+                    <Td>
+                      {todo.completeDate
+                        ? new Date(todo.completeDate).toLocaleDateString()
+                        : "-"}
+                    </Td>
+                    <Td>
+                      <TodoDelete handleDelete={() => handleDelete(todo.id)} />
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          <TodoFilter
+            todos={todos}
+            currentFilter={filter}
+            filterTasks={filterTasks}
+          />
         </>
       )}
     </>
