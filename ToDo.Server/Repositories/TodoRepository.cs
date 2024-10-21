@@ -13,7 +13,7 @@ namespace ToDo.Server.Repositories
             _context = context;
         }
 
-        public async Task<IList<TodoTask>> GetAllAsync() => await _context.TodoTasks.ToListAsync();
+        public async Task<IList<TodoTask>> GetAllAsync() => await _context.TodoTasks.OrderBy(p=>p.Description).ToListAsync();
         public async Task<TodoTask?> GetByIdAsync(Guid id)=> await _context.TodoTasks.FindAsync(id);
 
         public async Task<TodoTask> AddAsync(TodoTask task)

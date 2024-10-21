@@ -12,20 +12,29 @@ import {
   Text,
   SkeletonText,
   Checkbox,
+  Tfoot,
+  RadioGroup,
+  Radio,
 } from "@chakra-ui/react";
-import useTodos from "../hooks/useTodos";
+import useTodos, { Todo } from "../hooks/useTodos";
+import { useState } from "react";
+import NewTodo from "./newTodo";
 
 const TodoList = () => {
+  const [showTodos, setShowTodos] = useState<Todo[]>([]);
   const { colorMode, toggleColorMode } = useColorMode();
+  const [filter, setFilter] = useState("all");
+  const { todos, error, isLoading } = useTodos({ dependency: [showTodos] });
 
-  const { todos, error, isLoading } = useTodos();
-  console.log(todos);
+  const handleSubmit = (result) => {
+    setShowTodos(result);
+  };
   const skeletons = [1, 2, 3, 4];
   return (
     <>
       <Button onClick={toggleColorMode}>
         Toggle {colorMode === "light" ? "Dark" : "Light"}
-      </Button>
+      </Button>{" "}
       {error && <Text color="red.500">{error}</Text>}
       {isLoading && (
         <TableContainer>
@@ -53,6 +62,7 @@ const TodoList = () => {
         </TableContainer>
       )}
       <br />
+      <NewTodo onSubmit={handleSubmit} />
       Todos
       <TableContainer>
         <Table size="sm">
@@ -60,6 +70,7 @@ const TodoList = () => {
             <Tr>
               <Th></Th>
               <Th>Task</Th>
+              <Th>Dead Line</Th>
               <Th></Th>
             </Tr>
           </Thead>
@@ -70,10 +81,25 @@ const TodoList = () => {
                   <Checkbox isChecked={todo.isCompleted}></Checkbox>
                 </Td>
                 <Td>{todo.description}</Td>
+                <Td>{todo.deadLine}</Td>
                 <Td>{todo.isCompleted}</Td>
               </Tr>
             ))}
           </Tbody>
+          <Tfoot>
+            <Tr>
+              <Th>{todos.length} items left</Th>
+              <Th>
+                <RadioGroup
+                  onChange={setFilter}
+                  value={filter}>
+                  <Radio value="all">All</Radio>
+                  <Radio value="active">Active</Radio>
+                  <Radio value="complete">Complete</Radio>
+                </RadioGroup>
+              </Th>
+            </Tr>
+          </Tfoot>
         </Table>
       </TableContainer>
     </>
