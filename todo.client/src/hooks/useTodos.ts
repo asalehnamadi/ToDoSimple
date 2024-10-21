@@ -24,12 +24,16 @@ const useTodos = ({ dependency }: Request) => {
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
 
+  const updateTodos = (updatedTodos: Todo[]) => {
+    setTodos(updatedTodos);
+  };
+
   useEffect(
     () => {
       const controller = new AbortController();
       setLoading(true);
       apiClient
-        .get<Todo>("/Todo")
+        .get<Todo[]>("/Todo")
         .then((res) => {
           setTodos(res.data);
           setLoading(false);
@@ -43,6 +47,6 @@ const useTodos = ({ dependency }: Request) => {
     },
     dependency ? dependency : []
   );
-  return { todos, error, isLoading };
+  return { todos, error, isLoading, updateTodos };
 };
 export default useTodos;

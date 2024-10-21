@@ -5,103 +5,136 @@ import {
   Tr,
   Th,
   Td,
-  TableCaption,
   TableContainer,
-  Button,
-  useColorMode,
   Text,
-  SkeletonText,
   Checkbox,
-  Tfoot,
-  RadioGroup,
-  Radio,
+  Heading,
+  useToast,
 } from "@chakra-ui/react";
 import useTodos, { Todo } from "../hooks/useTodos";
 import { useState } from "react";
 import NewTodo from "./newTodo";
+import apiClient from "../services/api-client";
+import TodoFilter from "./todoFilter";
+import TodoDelete from "./todoDelete";
+import TodoSkeleton from "./todoSkeleton";
+import TodoComplete from "./todoUpdate";
 
 const TodoList = () => {
-  const [showTodos, setShowTodos] = useState<Todo[]>([]);
-  const { colorMode, toggleColorMode } = useColorMode();
-  const [filter, setFilter] = useState("all");
-  const { todos, error, isLoading } = useTodos({ dependency: [showTodos] });
+  const toast = useToast();
+  const [update, setUpdate] = useState();
+
+  const { todos, error, isLoading, updateTodos } = useTodos({});
 
   const handleSubmit = (result) => {
-    setShowTodos(result);
+    const updatedTodos = [...todos, result];
+    updatedTodos.sort((a, b) => a.description.localeCompare(b.description));
+    updateTodos(updatedTodos);
+    setUpdate(result.id);
   };
-  const skeletons = [1, 2, 3, 4];
+
+  const handleComplete = (todo: Todo) => {
+    const updatedTodo = { ...todo, isCompleted: !todo.isCompleted };
+    apiClient
+      .put(`/Todo/${todo.id}`, todo)
+      .then((res) => {
+        const updatedTodos = todos.map((t) =>
+          t.id === todo.id ? updatedTodo : t
+        );
+        updateTodos(updatedTodos);
+        setUpdate(todo.id);
+      })
+      .catch((err) => {
+        toast({
+          title: "Error occurd.",
+          description: err.message,
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
+      });
+  };
+
+  const handleDelete = (id) => {
+    apiClient
+      .delete(`/Todo/${id}`)
+      .then((res) => {
+        const updatedTodos = todos.filter((todo) => todo.id !== id);
+        updateTodos(updatedTodos);
+        setUpdate(id);
+      })
+      .catch((err) => {
+        toast({
+          title: "Error occurd.",
+          description: err.message,
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
+      });
+  };
+
+  const getColor = (todo: Todo) => {
+    if (todo.isCompleted) return "green.500";
+    if (todo.deadLine === null) return "";
+    const dueDate = new Date(todo.deadLine);
+    const today = new Date();
+    if (dueDate < today) return "red.500";
+  };
+
+  const handleFilter = () => {
+    console.log("filtered");
+  };
   return (
     <>
-      <Button onClick={toggleColorMode}>
-        Toggle {colorMode === "light" ? "Dark" : "Light"}
-      </Button>{" "}
       {error && <Text color="red.500">{error}</Text>}
-      {isLoading && (
-        <TableContainer>
-          <Table variant="simple">
-            <TableCaption>Imperial to metric conversion factors</TableCaption>
-            <Thead>
-              <Tr>
-                <Th>Task</Th>
-                <Th></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {skeletons.map((skeleton) => (
-                <Tr key={skeleton}>
-                  <Td>
-                    <SkeletonText />
-                  </Td>
-                  <Td>
-                    <SkeletonText />
-                  </Td>
+      {isLoading && <TodoSkeleton />}
+      {todos.length > 0 && (
+        <>
+          <NewTodo onSubmit={handleSubmit} />
+          <Heading as="h1">Todos</Heading>
+          <TableContainer>
+            <Table size="sm">
+              <Thead>
+                <Tr>
+                  <Th></Th>
+                  <Th>Task</Th>
+                  <Th>Dead Line</Th>
+                  <Th></Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+              </Thead>
+              <Tbody>
+                {todos.map((todo) => (
+                  <Tr
+                    key={todo.id}
+                    sx={{ _hover: { bg: "gray.900" } }}
+                    color={getColor(todo)}>
+                    <Td>
+                      <TodoComplete
+                        todo={todo}
+                        changeComplete={() => handleComplete(todo)}
+                      />
+                    </Td>
+                    <Td>{todo.description}</Td>
+                    <Td>
+                      {todo.deadLine
+                        ? new Date(todo.deadLine).toLocaleDateString()
+                        : ""}
+                    </Td>
+                    <Td>
+                      <TodoDelete handleDelete={() => handleDelete(todo.id)} />
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          <TodoFilter
+            todos={todos}
+            updateTodos={updateTodos}
+          />
+        </>
       )}
-      <br />
-      <NewTodo onSubmit={handleSubmit} />
-      Todos
-      <TableContainer>
-        <Table size="sm">
-          <Thead>
-            <Tr>
-              <Th></Th>
-              <Th>Task</Th>
-              <Th>Dead Line</Th>
-              <Th></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {todos.map((todo) => (
-              <Tr key={todo.id}>
-                <Td>
-                  <Checkbox isChecked={todo.isCompleted}></Checkbox>
-                </Td>
-                <Td>{todo.description}</Td>
-                <Td>{todo.deadLine}</Td>
-                <Td>{todo.isCompleted}</Td>
-              </Tr>
-            ))}
-          </Tbody>
-          <Tfoot>
-            <Tr>
-              <Th>{todos.length} items left</Th>
-              <Th>
-                <RadioGroup
-                  onChange={setFilter}
-                  value={filter}>
-                  <Radio value="all">All</Radio>
-                  <Radio value="active">Active</Radio>
-                  <Radio value="complete">Complete</Radio>
-                </RadioGroup>
-              </Th>
-            </Tr>
-          </Tfoot>
-        </Table>
-      </TableContainer>
     </>
   );
 };

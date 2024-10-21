@@ -28,6 +28,16 @@ const NewTodo = ({ onSubmit }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const toast = useToast();
+
+  const handleClose = () => {
+    setDescription("");
+    setDeadLine("");
+    setIsCompleted(false);
+    setErrors({});
+    setLoading(false);
+    onClose();
+  };
+
   const handleSubmit = (event) => {
     setErrors({});
     event.preventDefault();
@@ -49,12 +59,8 @@ const NewTodo = ({ onSubmit }) => {
       apiClient
         .post("/Todo", todoModel)
         .then((res) => {
-          setDescription("");
-          setDeadLine("");
-          setIsCompleted(false);
           onSubmit(res.data);
-          onClose();
-          setLoading(false);
+          handleClose();
         })
         .catch((err) => {
           toast({
@@ -67,12 +73,6 @@ const NewTodo = ({ onSubmit }) => {
           setLoading(false);
         });
     }
-
-    // Reset form
-    // setDescription("");
-    // setDeadLine("");
-    // setIsCompleted(false);
-    // onClose();
   };
   return (
     <>
@@ -85,7 +85,7 @@ const NewTodo = ({ onSubmit }) => {
       </Button>
       <Modal
         isOpen={isOpen}
-        onClose={onClose}>
+        onClose={handleClose}>
         <ModalOverlay />
         <ModalContent
           as="form"
