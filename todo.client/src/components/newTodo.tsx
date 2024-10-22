@@ -27,7 +27,7 @@ const NewTodo = ({ onSubmit }: Prop) => {
   const [description, setDescription] = useState("");
   const [deadLine, setDeadLine] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -42,23 +42,24 @@ const NewTodo = ({ onSubmit }: Prop) => {
     onClose();
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     setErrors({});
     event.preventDefault();
     const { error } = todoSchema.validate({ description, deadLine });
     if (error) {
       setErrors(
         error.details.reduce(
-          (acc, curr) => ({ ...acc, [curr.path]: curr.message }),
+          (acc, curr) => ({ ...acc, [curr.path[0]]: curr.message }),
           {}
         )
       );
     } else {
       const todoModel: Todo = {
+        id: "",
         description,
-        deadLine: deadLine === "" ? undefined : deadLine,
+        deadLine: deadLine === "" ? undefined : new Date(deadLine),
         completeDate: isCompleted
-          ? new Date(new Date().toUTCString()).toISOString()
+          ? new Date(new Date().toUTCString())
           : undefined,
       };
       setLoading(true);
@@ -100,7 +101,7 @@ const NewTodo = ({ onSubmit }: Prop) => {
           <ModalCloseButton />
           <ModalBody>
             <FormControl
-              isInvalid={errors.description}
+              isInvalid={!!errors.description}
               isRequired
               mb={4}>
               <FormLabel>Description</FormLabel>
