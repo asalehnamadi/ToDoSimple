@@ -1,13 +1,12 @@
 import { Box, Text } from "@chakra-ui/react";
-import { Todo } from "../hooks/useTodos";
 
 interface Request {
-  todos: Todo[];
+  taskCount: number;
   currentFilter: string;
   filterTasks: (filter: string) => void;
 }
 
-const TodoFilter = ({ todos, currentFilter, filterTasks }: Request) => {
+const TodoFilter = ({ taskCount, currentFilter, filterTasks }: Request) => {
   const handleFilter = (value: "all" | "active" | "complete") => {
     filterTasks(value);
   };
@@ -17,7 +16,7 @@ const TodoFilter = ({ todos, currentFilter, filterTasks }: Request) => {
       <Box
         display="flex"
         alignItems="center">
-        <Text>{todos.length} items left</Text>
+        <Text>{taskCount} items left</Text>
         {["all", "active", "complete"].map((filter) => (
           <Box
             key={filter}

@@ -62,7 +62,8 @@ const TodoDelete = ({ handleDelete }: Props) => {
             <Button
               colorScheme="red"
               onClick={confirmDelete}
-              ml={3}>
+              ml={3}
+              leftIcon={<DeleteIcon />}>
               Delete
             </Button>
           </ModalFooter>

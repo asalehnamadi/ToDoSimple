@@ -19,7 +19,11 @@ import { useState } from "react";
 import { Todo, todoSchema } from "../hooks/useTodos";
 import apiClient from "../services/api-client";
 
-const NewTodo = ({ onSubmit }) => {
+interface Prop {
+  onSubmit: (result: Todo) => void;
+}
+
+const NewTodo = ({ onSubmit }: Prop) => {
   const [description, setDescription] = useState("");
   const [deadLine, setDeadLine] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
@@ -52,8 +56,10 @@ const NewTodo = ({ onSubmit }) => {
     } else {
       const todoModel: Todo = {
         description,
-        deadLine: deadLine === "" ? null : deadLine,
-        isCompleted,
+        deadLine: deadLine === "" ? undefined : deadLine,
+        completeDate: isCompleted
+          ? new Date(new Date().toUTCString()).toISOString()
+          : undefined,
       };
       setLoading(true);
       apiClient
