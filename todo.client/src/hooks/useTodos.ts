@@ -13,7 +13,7 @@ export const isTaskComplete = (todo: Todo) => {
   return todo.completeDate !== null;
 };
 export const todoSchema = Joi.object({
-  description: Joi.string().min(5).required(),
+  description: Joi.string().min(10).required(),
   deadLine: Joi.string().isoDate().allow(""),
 });
 
